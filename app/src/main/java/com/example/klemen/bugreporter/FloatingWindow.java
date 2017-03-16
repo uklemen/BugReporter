@@ -13,6 +13,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -33,16 +34,11 @@ import com.github.clans.fab.FloatingActionMenu;
 public class FloatingWindow extends Service{
 
     WindowManager windowManager;
-    LinearLayout linearLayoutMenu;
-    Button btnScreenshot;
-    Button btnRecording;
-    Button btnDetails;
-    Button btnSend;
     boolean clicked = true;
     CountDownTimer countTimer;
-    int i;
-    private ImageView chatHead;
     View layoutButton;
+    int lastPositionX, lastPositionY;
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -55,7 +51,6 @@ public class FloatingWindow extends Service{
 
         //declaration
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        linearLayoutMenu = new LinearLayout(this);
         countTimer = null;
         Display display = windowManager.getDefaultDisplay();
         Point size = new Point();
@@ -80,10 +75,64 @@ public class FloatingWindow extends Service{
         parametersButton.y = 200;
         windowManager.addView(layoutButton, parametersButton);
 
-        FloatingActionMenu floatingActionMenu = (FloatingActionMenu) layoutButton.findViewById(R.id.material_design_android_floating_action_menu);
 
         //Button touched/moved/clicked
-        floatingActionMenu.setOnTouchListener(new View.OnTouchListener() {
+        try {
+
+            layoutButton.findViewById(R.id.material_design_android_floating_action_menu).setOnTouchListener(new View.OnTouchListener() {
+                private WindowManager.LayoutParams paramsF = parametersButton;
+                private int initialX;
+                private int initialY;
+                private float initialTouchX;
+                private float initialTouchY;
+
+                float move_X_axis,move_Y_axis;
+
+                @Override public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+
+                            Log.e("ACTION_DOWN","1");
+
+                            initialX = paramsF.x;
+                            initialY = paramsF.y;
+                            initialTouchX = event.getRawX();
+                            initialTouchY = event.getRawY();
+
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            Log.e("ACTION_UP","2");
+                            break;
+
+                        case MotionEvent.ACTION_MOVE:
+                            Log.e("ACTION_MOVE","3");
+
+
+                            paramsF.x = initialX + (int) (event.getRawX() - initialTouchX);
+                            paramsF.y = initialY + (int) (event.getRawY() - initialTouchY);
+
+                            windowManager.updateViewLayout(layoutButton, paramsF);
+
+                            move_X_axis = event.getRawX() - initialTouchX;
+                            move_Y_axis = event.getRawY() - initialTouchY;
+
+                            lastPositionX = paramsF.x;
+                            lastPositionY = paramsF.y;
+
+                            break;
+                    }
+
+                    return false;
+                }
+            });
+
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        /*layoutButton.setOnTouchListener(new View.OnTouchListener() {
             WindowManager.LayoutParams updatedParameters = parametersButton;
             int x;
             int y;
@@ -105,6 +154,7 @@ public class FloatingWindow extends Service{
                         break;
                     case MotionEvent.ACTION_UP:
                         if(clicked){
+
                         }
                         else{
                             if(updatedParameters.y > (height/2 - 300)) {
@@ -117,7 +167,7 @@ public class FloatingWindow extends Service{
                                 updatedParameters.x = 0;
                             }
                             else {
-                                updatedParameters.x = width - 250;
+                                updatedParameters.x = width - 5;
                             }
                             windowManager.updateViewLayout(layoutButton,updatedParameters);
                         }
@@ -135,7 +185,7 @@ public class FloatingWindow extends Service{
                 return false;
             }
 
-        });
+        });*/
 
     }
     //start timer function
