@@ -63,28 +63,37 @@ public class FloatingWindow extends Service{
 
         //Main Button
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        layoutButton = inflater.inflate(R.layout.activity_main_button, null);
+        layoutButton = inflater.inflate(R.layout.activity_main_button,null ,true);
         final WindowManager.LayoutParams parametersButton = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_TOAST,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        parametersButton.gravity = Gravity.RIGHT;
-        //parametersButton.x = 0;
-        //parametersButton.y = 200;
+        parametersButton.gravity = Gravity.LEFT;
+        parametersButton.x = 0;
+        parametersButton.y = 200;
         windowManager.addView(layoutButton, parametersButton);
+        startTimer();
 
 
-        final FloatingActionMenu floatingActionMenu = (FloatingActionMenu) layoutButton.findViewById(R.id.material_design_android_floating_action_menu);
+        /*final FloatingActionMenu floatingActionMenu = (FloatingActionMenu) layoutButton.findViewById(R.id.material_design_android_floating_action_menu);
         floatingActionMenu.setOnMenuButtonClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(floatingActionMenu.isOpened()) {
                     floatingActionMenu.close(true);
                     floatingActionMenu.removeAllMenuButtons();
+                    parametersButton.gravity = Gravity.LEFT;
+                    parametersButton.x = 0;
+                    parametersButton.y = 200;
+                    windowManager.updateViewLayout(layoutButton,parametersButton);
+                    startTimer();
                 }
                 else {
+                    cancelTimer();
+                    layoutButton.setAlpha(1.0f);
+                    WindowManager.LayoutParams updatedParams = parametersButton;
                     description.setButtonSize(1);
                     description.setImageResource(R.mipmap.ic_pisi);
                     screen.setButtonSize(1);
@@ -95,11 +104,15 @@ public class FloatingWindow extends Service{
                     floatingActionMenu.addMenuButton(video);
                     floatingActionMenu.addMenuButton(description);
                     floatingActionMenu.open(true);
+                    updatedParams.gravity = Gravity.RIGHT;
+                    updatedParams.x = 0;
+                    updatedParams.y = 200;
+                    windowManager.updateViewLayout(layoutButton,updatedParams);
                 }
             }
-        });
+        });*/
 
-        //Button touched/moved/clicked
+        //Button moved
         layoutButton.setOnTouchListener(new View.OnTouchListener() {
             WindowManager.LayoutParams updatedParameters = parametersButton;
             int x;
@@ -121,24 +134,19 @@ public class FloatingWindow extends Service{
                         cancelTimer();
                         break;
                     case MotionEvent.ACTION_UP:
-                        if(clicked){
-
+                        if(updatedParameters.y > (height/2 - 300)) {
+                            updatedParameters.y = height/2 - 150;
                         }
-                        else{
-                            if(updatedParameters.y > (height/2 - 300)) {
-                                updatedParameters.y = height/2 - 150;
-                            }
-                            else if(updatedParameters.y < -(height/2 - 300)) {
-                                updatedParameters.y = -height/2 + 150;
-                            }
-                            else if(updatedParameters.x <= (width/2 - 150)) {
-                                updatedParameters.x = 0;
-                            }
-                            else {
-                                updatedParameters.x = width - 5;
-                            }
-                            windowManager.updateViewLayout(layoutButton,updatedParameters);
+                        else if(updatedParameters.y < -(height/2 - 300)) {
+                            updatedParameters.y = -height/2 + 150;
                         }
+                        else if(updatedParameters.x <= (width/2 - 150)) {
+                            updatedParameters.x = 0;
+                        }
+                        else {
+                            updatedParameters.x = width - 5;
+                        }
+                        windowManager.updateViewLayout(layoutButton,updatedParameters);
                         startTimer();
                         break;
                     case MotionEvent.ACTION_MOVE:
